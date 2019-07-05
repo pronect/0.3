@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from flask import request, jsonify
 
 from app import app, db
@@ -76,3 +77,11 @@ def add_user():
     db.session.add(user)
     db.session.commit()
     return 'done'
+=======
+from app import db
+from app.models.user import User
+
+u1 = User(id='26c940a1-7228-4ea2-a3bc-e6460b172040', name='Бессонов Дмитрий', balance='1000', hold='0', status=1)
+db.session.add(u1)
+db.session.commit()
+>>>>>>> 7d99597d12b8b8f420930826a7b67779dc9e8675
