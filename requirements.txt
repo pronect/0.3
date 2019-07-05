@@ -1,0 +1,5 @@
+flask
+flask_sqlalchemy
+jsonrpcclient
+jsonrpcclient[requests]
+jsonrpcserver
