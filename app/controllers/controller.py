@@ -1,27 +1,38 @@
-<<<<<<< HEAD
 from flask import request, jsonify
 
 from app import app, db
 from app.models.user import User
 
 
-
 @app.route('/api/ping', methods=['POST'])
 def ping():
-    return "Status OK"
+    data = {
+        'status': 'http статус запроса',
+        'result': 'true',
+        'addition': 'none',
+        'description': 'Работоспособность сервиса',
+    }
+    return jsonify(data)
 
 
 @app.route('/api/add', methods=['POST'])
 def add():
     client_id = request.form.get('client_id')
-    money = request.form.get('money')
+    money = int(request.form.get('money'))
     select = User.query.filter_by(id=client_id).first()
-    data = {'id': select.id,
-            'name': select.name,
-            'balance': select.balance
-            }
+    data = {
+        'status': '200',
+        'result': 'true',
+        'addition': {
+            'id:': select.id,
+            'ФИО:': select.name,
+            'Баланс:': select.balance,
+            'Статус счета:': select.status,
+        },
+        'description': 'пополнение баланса',
+    }
     if select.status:
-        select.balance += int(money)
+        select.balance += money
         db.session.commit()
         return jsonify(data)
     else:
@@ -37,10 +48,17 @@ def substract():
     if result > 0:
         select.balance -= int(money)
         db.session.commit()
-        data = {'id': select.id,
-                'name': select.name,
-                'balance': select.balance
-                }
+        data = {
+            'status': '<200>',
+            'result': 'true',
+            'addition': {
+                'id:': select.id,
+                'ФИО:': select.name,
+                'Баланс:': select.balance,
+                'Статус счета:': select.status,
+            },
+            'description': 'уменьшение баланса',
+        }
         return jsonify(data)
     else:
         return jsonify({
@@ -56,10 +74,10 @@ def status():
     if client_id:
         select = User.query.filter_by(id=client_id).first()
         data = {
-            'id': select.id,
-            'name': select.name,
-            'balance / hold': [select.balance, select.hold],
-            'account status': select.status,
+            'status': '<http_status>',
+            'result': '<bool:operation_status>',
+            'addition': (select.balance, select.status),
+            'description': 'остаток по балансу, открыт счет или закрыт',
         }
         return jsonify(data)
     else:
@@ -77,11 +95,3 @@ def add_user():
     db.session.add(user)
     db.session.commit()
     return 'done'
-=======
-from app import db
-from app.models.user import User
-
-u1 = User(id='26c940a1-7228-4ea2-a3bc-e6460b172040', name='Бессонов Дмитрий', balance='1000', hold='0', status=1)
-db.session.add(u1)
-db.session.commit()
->>>>>>> 7d99597d12b8b8f420930826a7b67779dc9e8675
