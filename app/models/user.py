@@ -6,14 +6,14 @@ from app import db
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'test.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'new.db')
 
 
 class User(db.Model):
-    id = db.Column(db.String, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    balance = db.Column(db.Integer, nullable=False)
-    hold = db.Column(db.Integer, nullable=False)
+    id = db.Column(db.String, unique=True, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    balance = db.Column(db.Float, nullable=False)
+    hold = db.Column(db.Float, nullable=False)
     status = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
