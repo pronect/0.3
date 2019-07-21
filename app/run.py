@@ -1,5 +1,3 @@
-from app import app
-import app.controllers.controller as api
 from app.controllers.controller import app
 
 
