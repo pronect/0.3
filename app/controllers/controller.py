@@ -40,24 +40,23 @@ def substract():
     money = float(request.form.get('money'))
     select = User.query.filter_by(id=client_id).first()
     exists = db.session.query(User.id).filter_by(id=client_id).scalar() is not None
-    if exists:
-        result = select.balance - select.hold - money
-        if result > 0 and select.status is True:
-            select.hold = select.hold + money
-            db.session.commit()
-            data = {
-                'status': '200',
-                'result': 'true',
-                'addition': {
-                    'id:': select.id,
-                    'ФИО:': select.name,
-                    'Баланс:': select.balance,
-                    'Статус счета:': select.status,
-                    'Сумма операции:': money,
-                },
-                'description': 'Уменьшение баланса',
-            }
-            return jsonify(data)
+    result = select.balance - select.hold - money
+    if exists and result > 0 and select.status is True:
+        select.hold = select.hold + money
+        db.session.commit()
+        data = {
+            'status': '200',
+            'result': 'true',
+            'addition': {
+                'id:': select.id,
+                'ФИО:': select.name,
+                'Баланс:': select.balance,
+                'Статус счета:': select.status,
+                'Сумма операции:': money,
+            },
+            'description': 'Уменьшение баланса',
+        }
+        return jsonify(data)
     return jsonify({'description': 'Счет закрыт или пользователь не существует'})
 
 
