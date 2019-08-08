@@ -1,7 +1,9 @@
-<<<<<<< HEAD
-# print(User.query.all())
-=======
+from app import app
 from app.models.user import User
+from flask import render_template
 
-print(User.query.all())
->>>>>>> 7d99597d12b8b8f420930826a7b67779dc9e8675
+@app.route('/users')
+def show_users():
+    select = User.query.all()
+    return render_template('users.html', select=select)
+
