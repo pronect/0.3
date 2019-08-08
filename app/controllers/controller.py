@@ -1,12 +1,14 @@
-from flask import request, jsonify
-
 from app import app, db
 from app.models.user import User
+from flask import request, jsonify
 
 
 @app.route('/api/ping', methods=['POST'])
 def ping():
-    return request.form
+    fields = [k for k in request.form]
+    values = [request.form[k] for k in request.form]
+    data = dict(zip(fields, values))
+    return jsonify(data)
 
 
 @app.route('/api/add', methods=['POST'])
@@ -30,7 +32,7 @@ def add():
         }
         select.balance = select.balance + money
         db.session.commit()
-        return jsonify(data)
+        return jsonify(data), 404
     return jsonify({'description': 'Счет закрыт или пользователь не существует'})
 
 
