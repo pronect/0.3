@@ -1,6 +1,27 @@
 from app import app, db
 from app.models.user import User
-from flask import request, jsonify
+from flask import request, jsonify, abort
+
+
+@app.route('/api/test', methods=['POST'])
+def api_format_source():
+    request.get_json()
+    print(request.get_json())
+    if request.json is None:
+        abort(400)
+    return jsonify(request.get_json())
+
+
+@app.route('/api/test2', methods=['POST'])
+def api():
+    data = request.get_json()
+    print(data)
+    select = User.query.filter_by(id=data['client_id']).first()
+    data2 = {
+        'id': select.id,
+        'name': select.name
+    }
+    return jsonify(data2)
 
 
 @app.route('/api/ping', methods=['POST'])
@@ -32,7 +53,7 @@ def add():
         }
         select.balance = select.balance + money
         db.session.commit()
-        return jsonify(data), 404
+        return jsonify(data)
     return jsonify({'description': 'Счет закрыт или пользователь не существует'})
 
 
