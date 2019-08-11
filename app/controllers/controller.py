@@ -20,110 +20,118 @@ def addition(id):
     }
 
 
-# def response_template(id):
-#     select = User.query.filter_by(id=id).first()
-#     return select.name
-#
-#
-# @app.route('/api/test', methods=['POST'])
-# def api_format_source():
-#     request.get_json()
-#     if request.get_json() is None:
-#         abort(400)
-#     return jsonify(request.get_json())
-
-# для тестов
-@app.route('/api/test2', methods=['POST'])
-def api():
-    d = make_response()
-    data = request.get_json()
-    response = app.response_class(
-        response=json.dumps(data),
-        status=400,
-        mimetype='application/json'
-    )
-    response = jsonify(data)
-    res = response.status_code = 200
-    data = {
-        "status": res
-    }
-    return (jsonify(data))
-
-
 @app.route('/api/ping', methods=['POST'])
 def ping():
+    if request.content_type != 'application/json':
+        return jsonify({'error': 'Invalid Content Type'}), 400
+
     data = request.get_json()
-    return jsonify(data)
+    return jsonify(data), 200
 
 
 @app.route('/api/add', methods=['POST'])
 def add():
     data = request.get_json()
+
+    if request.content_type != 'application/json':
+        return jsonify({'error': 'Invalid Content Type'}), 400
+
+    if not all([data.get('id'), data.get('money')]):
+        return jsonify({'error': 'Missing field/s (id, money)'}), 400
+
     id = data['id']
-    money = data['money']
-    money = round(float(money), 2)
+    money = float(data['money'])
     select = User.query.filter_by(id=id).first()
-    exists = db.session.query(User.id).filter_by(id=id).scalar() is not None
-    if exists and select.status:
-        select.balance = select.balance + money
-        db.session.commit()
-        data = {
-            'status': '200',
-            'result': 'true',
-            'addition': addition(id),
-            'description': 'add balance',
-        }
-        return jsonify(data)
-    return jsonify({'description': 'Счет закрыт или пользователь не существует'})
+
+    if money != float("{0:.2f}".format(money)):
+        return jsonify({'error': '2 decimal places'}), 400
+
+    if db.session.query(User.id).filter_by(id=id).scalar() is None:
+        return jsonify({'error': 'client unknown'}), 400
+
+    if select.status is False:
+        return jsonify({'error': 'account closed'}), 400
+
+    select.balance = select.balance + money
+    db.session.commit()
+    data = {
+        'status': '200',
+        'result': 'true',
+        'addition': addition(id),
+        'description': 'add balance',
+            }
+    return jsonify(data), 200
 
 
 @app.route('/api/subtract', methods=['POST'])
 def substract():
     data = request.get_json()
+
+    if request.content_type != 'application/json':
+        return jsonify({'error': 'Invalid Content Type'}), 400
+
+    if not all([data.get('id'), data.get('money')]):
+        return jsonify({'error': 'Missing field/s (id, money)'}), 400
+
     id = data['id']
-    money = data['money']
-    money = round(float(money), 2)
+    money = float(data['money'])
     select = User.query.filter_by(id=id).first()
-    exists = db.session.query(User.id).filter_by(id=id).scalar() is not None
-    result = select.balance - select.hold - money
-    if exists and result > 0 and select.status is True:
-        select.hold = select.hold + money
-        db.session.commit()
-        data = {
-            'status': '200',
-            'result': 'true',
-            'addition': addition(id),
-            'description': 'subtract balance',
-        }
-        return jsonify(data)
-    return jsonify({'description': 'Счет закрыт или пользователь не существует'})
+
+    if money != float("{0:.2f}".format(money)):
+        return jsonify({'error': '2 decimal places'}), 400
+
+    if db.session.query(User.id).filter_by(id=id).scalar() is None:
+        return jsonify({'error': 'client unknown'}), 400
+
+    if select.status is False:
+        return jsonify({'error': 'account closed'}), 400
+
+    if select.balance - select.hold - money < 0:
+        return jsonify({'error': 'операция не возможна'}), 400
+
+    select.hold = select.hold + money
+    db.session.commit()
+    data = {
+        'status': '200',
+        'result': 'true',
+        'addition': addition(id),
+        'description': 'subtract balance',
+            }
+    return jsonify(data), 200
 
 
 @app.route('/api/status', methods=['POST'])
 def status():
     data = request.get_json()
-    id = data['id']
-    exists = db.session.query(User.id).filter_by(id=id).scalar() is not None
-    if exists and id:
-        data = {
-            'status': '200',
-            'result': 'true',
-            'addition': addition(id),
-            'description': 'Остаток по балансу, открыт счет или закрыт',
-        }
-        return jsonify(data)
-    return jsonify({'info': 'Не указан id клиента, либо пользваотель не существует'})
+
+    if request.content_type != 'application/json':
+        return jsonify({'error': 'Invalid Content Type'}), 400
+
+    if not all([data.get('id')]):
+        return jsonify({'error': 'Missing field/s (id)'}), 400
+
+    if db.session.query(User.id).filter_by(id=data['id']).scalar() is None:
+        return jsonify({'error': 'client unknown'}), 400
+
+    data = {
+        'status': '200',
+        'result': 'true',
+        'addition': addition(data['id']),
+        'description': 'Остаток по балансу, открыт счет или закрыт',
+            }
+    return jsonify(data), 200
+
 
 
 # добавляет нового клиента в базу
-@app.route('/api/add_user', methods=['POST'])
-def add_user():
-    client_id = request.form.get('client_id')
-    name = request.form.get('name')
-    balance = request.form.get('balance')
-    hold = request.form.get('hold')
-    state = request.form.get('state')
-    user = User(id=int(client_id), name=str(name), balance=int(balance), hold=int(hold), status=bool(state))
-    db.session.add(user)
-    db.session.commit()
-    return 'done'
+# @app.route('/api/add_user', methods=['POST'])
+# def add_user():
+#     client_id = request.form.get('client_id')
+#     name = request.form.get('name')
+#     balance = request.form.get('balance')
+#     hold = request.form.get('hold')
+#     state = request.form.get('state')
+#     user = User(id=int(client_id), name=str(name), balance=int(balance), hold=int(hold), status=bool(state))
+#     db.session.add(user)
+#     db.session.commit()
+#     return 'done'
