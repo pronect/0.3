@@ -15,12 +15,12 @@ for id in lst:
 def subhold():
     for id in ids:
         select = User.query.filter_by(id=id).first()
-        if (select.balance - select.hold) > 0 and select.status is True:
+        if (select.balance - select.hold) >= 0 and select.status is True:
             select.balance = select.balance - select.hold
             select.hold = 0
             db.session.commit()
 
 
-while True:
-    time.sleep(10)
-    subhold()
+#while True:
+#    time.sleep(10)
+subhold()
