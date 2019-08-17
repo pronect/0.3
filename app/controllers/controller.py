@@ -9,7 +9,7 @@ def resource_not_found(e):
 
 
 def addition(id):
-    """шаблон для json. возвращает всю строку из базы"""
+    """Шаблон для json, возвращает всю инофрмацию о пользователе из БД"""
     select = User.query.filter_by(id=id).first()
     return {
         "id": select.id,
@@ -22,6 +22,7 @@ def addition(id):
 
 @app.route('/api/ping', methods=['POST'])
 def ping():
+    """Возвращает в json тоже что и получил"""
     if request.content_type != 'application/json':
         return jsonify({'error': 'Invalid Content Type'}), 400
 
@@ -31,6 +32,7 @@ def ping():
 
 @app.route('/api/add', methods=['POST'])
 def add():
+    """Добавление средств в поле balance"""
     data = request.get_json()
 
     if request.content_type != 'application/json':
@@ -59,12 +61,13 @@ def add():
         'result': 'true',
         'addition': addition(id),
         'description': 'add balance',
-            }
+    }
     return jsonify(data), 200
 
 
 @app.route('/api/subtract', methods=['POST'])
 def substract():
+    """Добавление средств в поле hold (списание средств)"""
     data = request.get_json()
 
     if request.content_type != 'application/json':
@@ -96,12 +99,13 @@ def substract():
         'result': 'true',
         'addition': addition(id),
         'description': 'subtract balance',
-            }
+    }
     return jsonify(data), 200
 
 
 @app.route('/api/status', methods=['POST'])
 def status():
+    """Возвращает данные пользователя из БД"""
     data = request.get_json()
 
     if request.content_type != 'application/json':
@@ -111,27 +115,31 @@ def status():
         return jsonify({'error': 'Missing field/s (id)'}), 400
 
     if db.session.query(User.id).filter_by(id=data['id']).scalar() is None:
-        return jsonify({'error': 'client unknown'}), 400
+        return jsonify({'error': 'client unknown'}), 404
 
     data = {
         'status': '200',
         'result': 'true',
         'addition': addition(data['id']),
         'description': 'Остаток по балансу, открыт счет или закрыт',
-            }
+    }
     return jsonify(data), 200
 
 
-
-# добавляет нового клиента в базу
-# @app.route('/api/add_user', methods=['POST'])
-# def add_user():
-#     client_id = request.form.get('client_id')
-#     name = request.form.get('name')
-#     balance = request.form.get('balance')
-#     hold = request.form.get('hold')
-#     state = request.form.get('state')
-#     user = User(id=int(client_id), name=str(name), balance=int(balance), hold=int(hold), status=bool(state))
-#     db.session.add(user)
-#     db.session.commit()
-#     return 'done'
+@app.route('/api/add_user', methods=['POST'])
+def add_user():
+    """Добавление нового пользователяя в БД"""
+    try:
+        data = request.get_json()
+        id = data['id']
+        name = data['id']
+        balance = data['id']
+        hold = data['id']
+        state = data['id']
+        user = User(id=str(id), name=str(name), balance=float(balance), hold=float(hold), status=bool(state))
+        db.session.add(user)
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        return 'done'
